@@ -1,16 +1,36 @@
+/*import mongoose from "mongoose";
+
+const connectDB = async () => {
+
+    mongoose.connection.on("connected" , () => {
+        console.log("DB Connect E-com")
+    })
+    
+    await mongoose.connect(`${process.env.MONGODB_URI}`)
+
+}
+
+export default connectDB*/
+
 import mongoose from "mongoose";
-import dotenv from "dotenv";
-dotenv.config();
 
 const connectDB = async () => {
   try {
-    
-    await mongoose.connect(`${process.env.MONGODB_URI}`);
-    console.log("MongoDB connected successfully");
-  } catch (error) {
-    console.error("MongoDB connection failed:", error.message);
-    process.exit(1); // Exit process with failure
+    const uri = process.env.MONGODB_URI;
+    if (!uri || !uri.startsWith("mongodb")) {
+      throw new Error("Invalid MongoDB URI");
+    }
+
+    await mongoose.connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    console.log("✅ MongoDB connected");
+  } catch (err) {
+    console.error("❌ MongoDB connection failed:", err.message);
+    process.exit(1); // Stops the server
   }
-}
+};
 
 export default connectDB;
