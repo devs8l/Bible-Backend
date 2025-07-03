@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+/*import mongoose from "mongoose";
 
 const connectDB = async () => {
 
@@ -10,4 +10,29 @@ const connectDB = async () => {
 
 }
 
-export default connectDB
+export default connectDB*/
+
+import mongoose from "mongoose";
+
+const connectDB = async () => {
+  const uri = process.env.MONGODB_URI;
+
+  if (!uri || (!uri.startsWith("mongodb://") && !uri.startsWith("mongodb+srv://"))) {
+    console.error("❌ Invalid or missing MongoDB URI.");
+    process.exit(1);
+  }
+
+  try {
+    await mongoose.connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    console.log("✅ MongoDB connected");
+  } catch (error) {
+    console.error("❌ MongoDB connection error:", error.message);
+    process.exit(1);
+  }
+};
+
+export default connectDB;
