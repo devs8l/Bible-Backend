@@ -1,4 +1,4 @@
-/*import mongoose from "mongoose";
+import mongoose from "mongoose";
 
 const connectDB = async () => {
 
@@ -10,27 +10,4 @@ const connectDB = async () => {
 
 }
 
-export default connectDB*/
-
-import mongoose from "mongoose";
-
-const connectDB = async () => {
-  try {
-    const uri = process.env.MONGODB_URI;
-    if (!uri || !uri.startsWith("mongodb")) {
-      throw new Error("Invalid MongoDB URI");
-    }
-
-    await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-
-    console.log("✅ MongoDB connected");
-  } catch (err) {
-    console.error("❌ MongoDB connection failed:", err.message);
-    process.exit(1); // Stops the server
-  }
-};
-
-export default connectDB;
+export default connectDB
