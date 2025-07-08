@@ -12,6 +12,8 @@ import bibleVerseRoute from "./routes/BibleArticlesRoute/bibleVerseRoute.js";
 import articleRoutes from './routes/BibleArticlesRoute/articleRoutes.js';
 import studyQuestionRoutes from "./routes/BibleArticlesRoute/studyQuestionRoutes.js";
 import imagePostRoutes from"./routes/BibleArticlesRoute/imageTitleRoutes.js";
+import subscribeRoute from './routes/subscribeRoute.js';
+import session from "express-session";
 
 
 // App config
@@ -23,9 +25,13 @@ connectCloudinary();
 
 // middlewares
 
-app.use(express.json())
 app.use(cors())
-
+app.use(express.json());
+app.use(session({
+  secret: "your-session-secret",
+  resave: false,
+  saveUninitialized: false,
+}));
 // api endpoints
 
 app.use("/api/user", userRouter)
@@ -37,6 +43,7 @@ app.use("/api/article", bibleVerseRoute)
 app.use('/api/article', articleRoutes);
 app.use('/api/study-questions', studyQuestionRoutes);
 app.use("/api/image-posts", imagePostRoutes);
+app.use('/api', subscribeRoute);
 
 app.get("/" , (req, res) => {
     res.send("Bible E-com Server is running")
