@@ -23,7 +23,7 @@ const addProduct = async (req, res) => {
             price: Number(price),
             stock: Number(stock),
             category,
-            image: [imageUrl], // storing it as an array for future-proofing
+            image: [imageUrl], 
             date: Date.now()
         };
 
