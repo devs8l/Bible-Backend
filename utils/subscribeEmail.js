@@ -10,7 +10,7 @@ const subscribeEmail = async ({ email, subject, message }) => {
   });
 
   await transporter.sendMail({
-    from: `"Bible Bookstore" <${process.env.MAIL_USER}>`,
+    from: `"Centro Biblia" <${process.env.MAIL_USER}>`,
     to: email,
     subject,
     text: message,

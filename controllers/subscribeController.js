@@ -11,11 +11,11 @@ export const subscribeHandler = async (req, res) => {
     // ✉️ Email to Subscriber
     await sendEmail({
       email,
-      subject: "Welcome to the Bible Bookstore Family!",
+      subject: "Welcome to the Centro Biblia Family!",
       message: `
 Dear Beloved,
 
-Thank you for subscribing to Bible Bookstore — your trusted companion on your spiritual journey.
+Thank you for subscribing to Centro Biblia — your trusted companion on your spiritual journey.
 
 🌿 “Your word is a lamp to my feet and a light to my path.” — Psalm 119:105
 
@@ -27,7 +27,7 @@ You’ll now receive:
 May God’s Word guide and bless you always.
 
 In Christ,
-Bible Bookstore Team
+Centro Biblia Team
       `.trim(),
     });
 
@@ -44,7 +44,7 @@ A new soul has joined our mailing list! ✨
 
 Keep spreading the Word with love.
 
-– Bible Bookstore System
+– Centro Biblia System
       `.trim(),
     });
 

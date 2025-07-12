@@ -52,7 +52,7 @@ const sendEmail = async ({ email, token, type }) => {
     : `${process.env.BASE_URL}/verify/${token}`;
 
   const subject = isReset ? "Reset Your Password" : "Verify Your Email";
-  const title = isReset ? "🔐 Password Reset Request" : "🙏 Welcome to Bible Bookstore";
+  const title = isReset ? "🔐 Password Reset Request" : "🙏 Welcome to Centro Biblia";
   const actionText = isReset ? "Reset Your Password" : "Verify Your Email";
   const description = isReset
     ? "We received a request to reset your password. Click the button below to proceed:"
@@ -77,7 +77,7 @@ const sendEmail = async ({ email, token, type }) => {
   });
 
   const mailOptions = {
-    from: `"Bible Bookstore" <${process.env.USER}>`,
+    from: `"Centro Biblia" <${process.env.USER}>`,
     to: email,
     subject,
     html: `
@@ -91,7 +91,7 @@ const sendEmail = async ({ email, token, type }) => {
         <blockquote style="margin-top: 30px; font-style: italic; color: #4a5568;">${verse}</blockquote>
         <hr style="margin-top: 40px;" />
         <p style="font-size: 14px; color: #888;">If you didn’t request this, you can safely ignore this email.</p>
-        <p style="font-size: 14px; color: #888;">– Bible Bookstore Team</p>
+        <p style="font-size: 14px; color: #888;">– Centro Biblia Team</p>
       </div>
     `
   };

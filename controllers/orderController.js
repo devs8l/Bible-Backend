@@ -15,31 +15,33 @@ const razorpayInstance = new razorpay({
 
 // Placing orders using COD Method
 const placedOrder = async (req, res) => {
-    try {
-        const {userId,  items , amount, address} = req.body;
-        const orderData = {
-            userId, 
-            items,
-            address,
-            amount,
-            paymentMethod: "COD",
-            payment: false,
-            date: Date.now()
-        }
+  try {
+    const { userId, name, email, phone, items, amount, address } = req.body;
 
-        const newOrder = new orderModel(orderData)
-        await newOrder.save()
+    const orderData = {
+      userId,
+      name,
+      email,
+      phone,
+      items,
+      address,
+      amount,
+      paymentMethod: "COD",
+      payment: false,
+      date: Date.now(),
+    };
 
-        await userModel.findByIdAndUpdate(userId,{cartData: {}})
+    const newOrder = new orderModel(orderData);
+    await newOrder.save();
 
-        res.json({success: true, message: "Order Placed"})
+    await userModel.findByIdAndUpdate(userId, { cartData: {} });
 
-
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-}
+    res.json({ success: true, message: "Order Placed" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 
 /*// Placing orders using RazorPay Method

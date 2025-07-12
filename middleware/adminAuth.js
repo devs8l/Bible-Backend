@@ -7,16 +7,17 @@ const adminAuth = async (req, res, next) => {
       return res.status(401).json({ success: false, message: "Not Authorized. Login Again." });
     }
 
-    const token = authHeader.split(" ")[1]; 
+    const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (decoded !== process.env.ADMIN_EMAIL + process.env.ADMIN_PASSWORD) {
+    if (!decoded.isAdmin || decoded.id !== "admin") {
       return res.status(403).json({ success: false, message: "Forbidden: Not an admin." });
     }
 
+    req.admin = decoded;
     next();
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(401).json({ success: false, message: "Invalid or expired token" });
   }
 };
