@@ -4,7 +4,8 @@ import {
   approveReview,
   getAllReviews,
   deleteReview,
-  getApprovedReviews
+  getApprovedReviews,
+  getAverageRating, getReviewSummary
 } from "../controllers/reviewController.js";
 import { verifyUser, verifyAdmin } from "../middleware/authMiddleware.js"; 
 
@@ -19,6 +20,9 @@ router.delete("/delete/:reviewId", verifyAdmin, deleteReview);
 //user access
 router.post("/submit", verifyUser, submitReview);
 router.get("/:productId", getApprovedReviews);
+router.get("/average/:productId", getAverageRating);
+router.get("/summary/:productId", getReviewSummary);
+
 
 
 export default router;
