@@ -31,10 +31,19 @@ const placedOrder = async (req, res) => {
       date: Date.now(),
     };
 
+    // Save order
     const newOrder = new orderModel(orderData);
     await newOrder.save();
 
-    await userModel.findByIdAndUpdate(userId, { cartData: {} });
+    // Get current user and remove only ordered items from cart
+    const user = await userModel.findById(userId);
+    if (user && user.cartData) {
+      const updatedCart = { ...user.cartData };
+      items.forEach(item => {
+        delete updatedCart[item.itemId]; // Remove only ordered items
+      });
+      await userModel.findByIdAndUpdate(userId, { cartData: updatedCart });
+    }
 
     res.json({ success: true, message: "Order Placed" });
   } catch (error) {

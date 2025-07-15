@@ -13,6 +13,7 @@ import articleRoutes from './routes/BibleArticlesRoute/articleRoutes.js';
 import studyQuestionRoutes from "./routes/BibleArticlesRoute/studyQuestionRoutes.js";
 import imagePostRoutes from"./routes/BibleArticlesRoute/imageTitleRoutes.js";
 import subscribeRoute from './routes/subscribeRoute.js';
+import contactRoutes from "./routes/contact.js";
 import session from "express-session";
 
 
@@ -44,6 +45,7 @@ app.use('/api/article', articleRoutes);
 app.use('/api/study-questions', studyQuestionRoutes);
 app.use("/api/image-posts", imagePostRoutes);
 app.use('/api', subscribeRoute);
+app.use('/api/contact', contactRoutes);
 
 app.get("/" , (req, res) => {
     res.send("Bible E-com Server is running")
