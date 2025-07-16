@@ -1,5 +1,6 @@
 import express from "express";
 import passport from "passport";
+import jwt from "jsonwebtoken";
 import {
   registerUser,
   verifyUser,
@@ -32,19 +33,29 @@ userRouter.put("/profile", authUser, upload.single("profilePic"), updateUserProf
 userRouter.post("/admin", adminLogin);
 userRouter.get("/admin/users", verifyAdmin,  getAllUsers);
 
-// Google Auth Route
-userRouter.get("/auth/google",
+// ------------------ GOOGLE AUTH ------------------
+
+// Step 1: Google Auth Start
+userRouter.get(
+  "/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-// Google Auth Callback
-userRouter.get("/auth/google/callback",
-  passport.authenticate("google", {
-    failureRedirect: "/login",
-    session: true,
-  }),
-  (req, res) => {
-    res.redirect(process.env.BASE_URL);
+// Step 2: Google Auth Callback
+userRouter.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login", session: false }),
+  async (req, res) => {
+    const user = req.user;
+
+    const token = jwt.sign(
+      { id: user._id, isAdmin: user.isAdmin || false },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    // Redirect to frontend with token and user info
+    res.redirect(`${process.env.FRONTEND_URL}/login/success?token=${token}&name=${encodeURIComponent(user.name)}&_id=${user._id}`);
   }
 );
 

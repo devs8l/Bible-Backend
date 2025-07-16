@@ -15,6 +15,9 @@ import imagePostRoutes from"./routes/BibleArticlesRoute/imageTitleRoutes.js";
 import subscribeRoute from './routes/subscribeRoute.js';
 import contactRoutes from "./routes/contact.js";
 import session from "express-session";
+import passport from "passport";
+import cookieParser from "cookie-parser";
+import "./config/passport.js"; 
 
 
 // App config
@@ -28,11 +31,23 @@ connectCloudinary();
 
 app.use(cors())
 app.use(express.json());
+app.use(cookieParser());
+/*app.use(session({
+  secret: "your-session-secret",
+  resave: false,
+  saveUninitialized: false,
+}));*/
+
 app.use(session({
   secret: "your-session-secret",
   resave: false,
   saveUninitialized: false,
+  cookie: {
+    secure: false, // Set true only in production with HTTPS
+    httpOnly: true
+  }
 }));
+
 // api endpoints
 
 app.use("/api/user", userRouter)
