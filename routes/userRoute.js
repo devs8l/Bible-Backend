@@ -55,7 +55,7 @@ userRouter.get(
     );
 
     // Redirect to frontend with token and user info
-    res.redirect(`${process.env.FRONTEND_URL}/login/success?token=${token}&name=${encodeURIComponent(user.name)}&_id=${user._id}`);
+    res.redirect(`${process.env.FRONTEND_URL}/login/success?token=${token}&name=${encodeURIComponent(user.name)}&_id=${user._id}&profilePic=${encodeURIComponent(user.profilePic || '')}`);
   }
 );
 
