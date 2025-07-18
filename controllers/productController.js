@@ -3,7 +3,7 @@ import productModel from "../models/productModel.js"
 
 
 // function for add product
-const addProduct = async (req, res) => {
+/*const addProduct = async (req, res) => {
     try {
         const { name, description, price, stock, category, bookDetailDescription} = req.body;
         const image = req.file;
@@ -71,6 +71,123 @@ const updateProduct = async (req, res) => {
   } catch (error) {
     console.error("Update product error:", error);
     res.status(500).json({ success: false, message: error.message });
+  }
+};*/
+
+// Helper function to upload any buffer to Cloudinary
+const uploadBufferToCloudinary = (buffer, folder, resourceType) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: resourceType },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result.secure_url);
+      }
+    );
+    stream.end(buffer);
+  });
+};
+
+// Add Product
+const addProduct = async (req, res) => {
+  try {
+    const {
+      name,
+      description,
+      bookDetailDescription,
+      price,
+      stock,
+      category,
+      author,
+      discount,
+      digitalPrice,
+    } = req.body;
+
+    const imageFile = req.files?.image?.[0];
+    const digitalPdfFile = req.files?.digitalPdf?.[0];
+
+    if (!imageFile) {
+      return res.status(400).json({ error: "Image file is required." });
+    }
+
+    // Upload image
+    const imageUrl = await uploadBufferToCloudinary(imageFile.buffer, "products", "image");
+
+    // Upload PDF if present
+    let digitalPdfUrl = null;
+    if (digitalPdfFile) {
+      digitalPdfUrl = await uploadBufferToCloudinary(digitalPdfFile.buffer, "products", "raw");
+    }
+
+    const newProduct = new productModel({
+      name,
+      description,
+      bookDetailDescription,
+      price,
+      stock,
+      category,
+      image: [imageUrl],
+      date: Date.now(),
+      author,
+      discount,
+      digitalPrice,
+      digitalFile: digitalPdfUrl,
+    });
+
+    await newProduct.save();
+    res.status(201).json({ message: "Product added", product: newProduct });
+  } catch (err) {
+    console.error("Product add error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// Update Product
+const updateProduct = async (req, res) => {
+  try {
+    const {
+      id,
+      name,
+      description,
+      price,
+      stock,
+      category,
+      bookDetailDescription,
+      author,
+      discount,
+      digitalPrice,
+    } = req.body;
+
+    const product = await productModel.findById(id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    // Update image if provided
+    if (req.files?.image?.[0]) {
+      const imageUrl = await uploadBufferToCloudinary(req.files.image[0].buffer, "products", "image");
+      product.image = [imageUrl];
+    }
+
+    // Update PDF if provided
+    if (req.files?.digitalPdf?.[0]) {
+      const digitalFileUrl = await uploadBufferToCloudinary(req.files.digitalPdf[0].buffer, "products", "raw");
+      product.digitalFile = digitalFileUrl;
+    }
+
+    product.name = name;
+    product.description = description;
+    product.price = price;
+    product.stock = stock;
+    product.category = category;
+    product.bookDetailDescription = bookDetailDescription;
+    product.author = author;
+    product.discount = discount;
+    product.digitalPrice = digitalPrice;
+
+    await product.save();
+    res.status(200).json({ success: true, message: "Product updated", product });
+  } catch (err) {
+    console.error("Update Product Error:", err);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
