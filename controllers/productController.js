@@ -1,79 +1,6 @@
 import {v2 as cloudinary } from "cloudinary";
 import productModel from "../models/productModel.js"
 
-
-// function for add product
-/*const addProduct = async (req, res) => {
-    try {
-        const { name, description, price, stock, category, bookDetailDescription} = req.body;
-        const image = req.file;
-
-        if (!image) {
-            return res.status(400).json({ success: false, message: "Image is required" });
-        }
-
-        // Upload single image to Cloudinary
-        const result = await cloudinary.uploader.upload(image.path, { resource_type: "image" });
-        const imageUrl = result.secure_url;
-
-        const productData = {
-            name,
-            description,
-            bookDetailDescription,
-            price: Number(price),
-            stock: Number(stock),
-            category,
-            image: [imageUrl], 
-            date: Date.now()
-        };
-
-        const product = new productModel(productData);
-        await product.save();
-
-        res.json({ success: true, message: "Product Added" });
-    } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: error.message });
-    }
-};
-
-// function for update product
-const updateProduct = async (req, res) => {
-  try {
-    const { id, name, description, price, stock, category, bookDetailDescription } = req.body;
-    let imageUrl;
-
-    if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, { resource_type: "image" });
-      imageUrl = result.secure_url;
-    }
-
-    const updateData = {
-      ...(name && { name }),
-      ...(description && { description }),
-      ...(price && { price: Number(price) }),
-      ...(stock && { stock: Number(stock) }),
-      ...(category && { category }),
-      ...(bookDetailDescription && { bookDetailDescription }),
-    };
-
-    if (imageUrl) {
-      updateData.image = [imageUrl]; // override old image
-    }
-
-    const updated = await productModel.findByIdAndUpdate(id, updateData, { new: true });
-
-    if (!updated) {
-      return res.status(404).json({ success: false, message: "Product not found" });
-    }
-
-    res.json({ success: true, message: "Product updated", product: updated });
-  } catch (error) {
-    console.error("Update product error:", error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};*/
-
 // Helper function to upload any buffer to Cloudinary
 const uploadBufferToCloudinary = (buffer, folder, resourceType) => {
   return new Promise((resolve, reject) => {
@@ -221,23 +148,6 @@ const removeProduct = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-// function for single product info
-/*const singleProduct = async (req, res) => {
-    try {
-        const { productId } = req.body
-        const product = await productModel.findById(productId)
-        res.json({success:true, product})
-
-    } catch (error) {
-        console.log(error)
-        res.json({success:false, message:error.message })
-    }
-}*/
-
-// controllers/productController.js
-
-
 
 // Get single product by ID
 const singleProduct = async (req, res) => {

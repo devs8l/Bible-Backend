@@ -1,12 +1,8 @@
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
-import sendDigitalCopy from "../utils/sendDigitalCopy.js";
 import productModel from "../models/productModel.js";
 /*import razorpay from "razorpay"
 
-// global variables
-const currency = "inr"
-const deliverCharge = 50
 
 // gateway initialize
 const razorpayInstance = new razorpay({
@@ -17,6 +13,55 @@ const razorpayInstance = new razorpay({
 
 // Placing orders using COD Method
 const placedOrder = async (req, res) => {
+  try {
+    const { userId, name, email, phone, items, amount, address } = req.body;
+
+    const orderData = {
+      userId,
+      name,
+      email,
+      phone,
+      items,
+      address,
+      amount,
+      paymentMethod: "COD",
+      payment: false,
+      date: Date.now(),
+    };
+
+    // Save order
+    const newOrder = new orderModel(orderData);
+    await newOrder.save();
+
+    // 1. Reduce stock for each ordered item
+    for (const item of items) {
+      const product = await productModel.findById(item.itemId);
+      if (product) {
+        product.stock = Math.max(product.stock - item.quantity, 0); // Avoid negative stock
+        await product.save();
+      }
+    }
+
+    // 2. Remove ordered items from user's cart
+    const user = await userModel.findById(userId);
+    if (user && user.cartData) {
+      const updatedCart = { ...user.cartData };
+      items.forEach(item => {
+        delete updatedCart[item.itemId]; // Remove only ordered items
+      });
+      await userModel.findByIdAndUpdate(userId, { cartData: updatedCart });
+    }
+
+    res.json({ success: true, message: "Order Placed" });
+  } catch (error) {
+    console.log("Order placement error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+
+/*const placedOrder = async (req, res) => {
   try {
     const { userId, name, email, phone, items, amount, address } = req.body;
 
@@ -53,51 +98,7 @@ const placedOrder = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-/*const placedOrder = async (req, res) => {
-  try {
-    const { userId, name, email, phone, items, amount, address, paymentMethod } = req.body;
-
-    const orderData = {
-      userId,
-      name,
-      email,
-      phone,
-      items,
-      address,
-      amount,
-      paymentMethod,
-      payment: paymentMethod !== "COD", // true only for prepaid
-      date: Date.now(),
-    };
-
-    const newOrder = new orderModel(orderData);
-    await newOrder.save();
-
-    // Handle digital items
-    for (const item of items) {
-      const product = await productModel.findById(item.itemId);
-      if (product?.digitalFile && item.format === "digital") {
-        await sendDigitalCopy(email, name, product.digitalFile, product.name);
-      }
-    }
-
-    // Remove ordered items from cart
-    const user = await userModel.findById(userId);
-    if (user && user.cartData) {
-      const updatedCart = { ...user.cartData };
-      items.forEach(item => {
-        delete updatedCart[item.itemId];
-      });
-      await userModel.findByIdAndUpdate(userId, { cartData: updatedCart });
-    }
-
-    res.json({ success: true, message: "Order Placed Successfully" });
-  } catch (error) {
-    console.error("❌ placedOrder error:", error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};*/
+*/
 
 /*// Placing orders using RazorPay Method
 const placedOrderRazorpay = async (req, res) => {
