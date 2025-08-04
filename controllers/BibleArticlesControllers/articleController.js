@@ -1,7 +1,8 @@
+// controllers/BibleArticlesControllers/articleController.js
 import Article from '../../models/BibleArticlesModel/Article.js';
 import { v2 as cloudinary } from 'cloudinary';
 
-// Helper to upload buffer to Cloudinary
+// Cloudinary uploader
 const uploadToCloudinary = (buffer, folder = 'authors') =>
   new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -14,7 +15,7 @@ const uploadToCloudinary = (buffer, folder = 'authors') =>
     stream.end(buffer);
   });
 
-// Create Article with optional image
+// Create Article
 export const createArticle = async (req, res) => {
   try {
     let imageUrl = '';
@@ -22,16 +23,19 @@ export const createArticle = async (req, res) => {
       imageUrl = await uploadToCloudinary(req.file.buffer);
     }
 
-    // Convert tags string to array
-    const tags = req.body.tags ? req.body.tags.split(',').map(tag => tag.trim()) : [];
+    const { title, authorName, verseText, referenceText, body, category } = req.body;
+
+    if (!category) {
+      return res.status(400).json({ success: false, message: "Category is required." });
+    }
 
     const article = await Article.create({
-      title: req.body.title,
-      authorName: req.body.authorName,
-      verseText: req.body.verseText,
-      referenceText: req.body.referenceText,
-      body: req.body.body,
-      tags,
+      title,
+      authorName,
+      verseText,
+      referenceText,
+      body,
+      category,
       authorImage: imageUrl
     });
 
@@ -41,7 +45,7 @@ export const createArticle = async (req, res) => {
   }
 };
 
-// Update Article with optional new image
+// Update Article
 export const updateArticle = async (req, res) => {
   try {
     let imageUrl = req.body.authorImage;
@@ -50,18 +54,17 @@ export const updateArticle = async (req, res) => {
       imageUrl = await uploadToCloudinary(req.file.buffer);
     }
 
-    // Convert tags string to array
-    const tags = req.body.tags ? req.body.tags.split(',').map(tag => tag.trim()) : [];
+    const { title, authorName, verseText, referenceText, body, category } = req.body;
 
     const article = await Article.findByIdAndUpdate(
       req.params.id,
       {
-        title: req.body.title,
-        authorName: req.body.authorName,
-        verseText: req.body.verseText,
-        referenceText: req.body.referenceText,
-        body: req.body.body,
-        tags,
+        title,
+        authorName,
+        verseText,
+        referenceText,
+        body,
+        category,
         authorImage: imageUrl
       },
       { new: true }
@@ -73,7 +76,7 @@ export const updateArticle = async (req, res) => {
   }
 };
 
-// Get single article
+// Get article by ID
 export const getArticleById = async (req, res) => {
   try {
     const article = await Article.findById(req.params.id);
@@ -86,38 +89,29 @@ export const getArticleById = async (req, res) => {
   }
 };
 
-// fuction for all article
-
+// Get articles by category (or latest if no category)
 export const getAllArticles = async (req, res) => {
   try {
-    const article = await Article.findOne().sort({ createdAt: -1 });
-    
-    if (!article) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'No articles found' 
-      });
+    const { category } = req.query;
+
+    let articles;
+    if (category) {
+      articles = await Article.find({ category }).sort({ createdAt: -1 });
+    } else {
+      articles = await Article.find({}).sort({ createdAt: -1 });
     }
 
-    res.json({
-      success: true,
-      data: {
-        title: article.title,
-        authorName: article.authorName,
-        authorImage: article.authorImage,
-        verseText: article.verseText,
-        referenceText: article.referenceText,
-        body: article.body
-      }
-    });
+    if (!articles || articles.length === 0) {
+      return res.status(404).json({ success: false, message: 'No articles found' });
+    }
+
+    res.json({ success: true, data: articles });
   } catch (err) {
-    res.status(500).json({ 
-      success: false, 
-      message: err.message 
-    });
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 
+// Get related articles (same category)
 export const getRelatedArticles = async (req, res) => {
   const { articleId } = req.params;
   try {
@@ -125,11 +119,27 @@ export const getRelatedArticles = async (req, res) => {
     if (!article) {
       return res.status(404).json({ success: false, message: 'Article not found' });
     }
+
     const related = await Article.find({
-      tags: { $in: article.tags },
+      category: article.category,
       _id: { $ne: articleId },
     }).limit(3);
+
     res.json({ success: true, related });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// Delete article
+export const deleteArticle = async (req, res) => {
+  try {
+    const result = await Article.findByIdAndDelete(req.params.id);
+    if (!result) {
+      return res.status(404).json({ success: false, message: 'Article not found' });
+    }
+
+    res.json({ success: true, message: 'Article deleted successfully' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

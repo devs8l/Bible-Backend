@@ -3,9 +3,9 @@ import BibleVerse from "../../models/BibleArticlesModel/bibleVerse.js";
 // Add a Bible Verse
 const addBibleVerse = async (req, res) => {
   try {
-    const { verseText, reference } = req.body;
+    const { verseText, reference, category } = req.body;
 
-    const newVerse = new BibleVerse({ verseText, reference });
+    const newVerse = new BibleVerse({ verseText, reference, category });
     await newVerse.save();
 
     res.json({ success: true, message: "Verse Added Successfully" });
@@ -18,21 +18,25 @@ const addBibleVerse = async (req, res) => {
 // Get all Bible Verses
 const getBibleVerses = async (req, res) => {
   try {
-    const verses = await BibleVerse.find().sort({ createdAt: -1 });
+    const { category } = req.query;
+    const filter = category ? { category } : {};
+
+    const verses = await BibleVerse.find(filter).sort({ createdAt: -1 });
     res.json({ success: true, verses });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
+
 // Update a Bible Verse (by ID)
 const updateBibleVerse = async (req, res) => {
   try {
-    const { id, verseText, reference } = req.body;
+    const { id, verseText, reference, category } = req.body;
 
     const updatedVerse = await BibleVerse.findByIdAndUpdate(
       id,
-      { verseText, reference, updatedAt: Date.now() },
+      { verseText, reference, category, updatedAt: Date.now() },
       { new: true }
     );
 
@@ -46,6 +50,21 @@ const updateBibleVerse = async (req, res) => {
   }
 };
 
+// Delete a Bible Verse (by ID)
+const deleteBibleVerse = async (req, res) => {
+  try {
+    const { id } = req.params;
 
+    const deletedVerse = await BibleVerse.findByIdAndDelete(id);
 
-export { addBibleVerse, getBibleVerses, updateBibleVerse };
+    if (!deletedVerse) {
+      return res.status(404).json({ success: false, message: "Verse not found" });
+    }
+
+    res.json({ success: true, message: "Verse deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export { addBibleVerse, getBibleVerses, updateBibleVerse, deleteBibleVerse };

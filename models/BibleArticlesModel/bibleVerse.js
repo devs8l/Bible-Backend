@@ -9,6 +9,11 @@ const bibleVerseSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  category: {
+    type: String,
+    enum: ['Old Testament', 'New Testament', 'Topical Bible Studies', 'Sermon Outlines'],
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -18,6 +23,7 @@ const bibleVerseSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
+
 
 const BibleVerse = mongoose.model('BibleVerse', bibleVerseSchema);
 export default BibleVerse;

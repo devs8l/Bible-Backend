@@ -1,3 +1,4 @@
+// routes/BibleArticlesRoutes/articleRoutes.js
 import express from 'express';
 import upload from '../../middleware/multer.js';
 import {
@@ -5,17 +6,19 @@ import {
   updateArticle,
   getArticleById,
   getAllArticles,
-  getRelatedArticles
+  getRelatedArticles,
+  deleteArticle
 } from '../../controllers/BibleArticlesControllers/articleController.js';
 import { verifyAdmin } from '../../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Multer handles file upload from 'file' field (profile image)
 router.post('/', upload.single('file'), verifyAdmin, createArticle);
 router.put('/:id', upload.single('file'), verifyAdmin, updateArticle);
-router.get('/:id', getArticleById);
+router.delete('/:id', verifyAdmin, deleteArticle);
+
 router.get('/', getAllArticles);
+router.get('/:id', getArticleById);
 router.get('/:articleId/related', getRelatedArticles);
 
 export default router;

@@ -7,8 +7,13 @@ const studyQuestionSchema = new mongoose.Schema({
     unique: true,
     trim: true
   },
+  category: {
+    type: String,
+    enum: ['Old Testament', 'New Testament', 'Topical Bible Studies', 'Sermon Outlines'],
+    required: true
+  },
   questions: [{
-    type: String,  
+    type: String,
     required: true,
     trim: true
   }]
