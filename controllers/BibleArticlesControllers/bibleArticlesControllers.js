@@ -1,4 +1,4 @@
-import BibleVerse from "../../models/BibleArticlesModel/bibleVerse.js";
+/*import BibleVerse from "../../models/BibleArticlesModel/bibleVerse.js";
 
 // Add a Bible Verse
 const addBibleVerse = async (req, res) => {
@@ -67,4 +67,4 @@ const deleteBibleVerse = async (req, res) => {
   }
 };
 
-export { addBibleVerse, getBibleVerses, updateBibleVerse, deleteBibleVerse };
+export { addBibleVerse, getBibleVerses, updateBibleVerse, deleteBibleVerse };*/

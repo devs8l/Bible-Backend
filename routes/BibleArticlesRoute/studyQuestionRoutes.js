@@ -1,4 +1,4 @@
-import express from 'express';
+/*import express from 'express';
 import {
   addStudyQuestions,
   getStudyQuestions,
@@ -21,4 +21,4 @@ router.put('/:title', verifyAdmin, updateStudyQuestions);
 // Delete study questions by title
 router.delete('/:title', verifyAdmin, deleteStudyQuestions);
 
-export default router;
+export default router;*/

@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+/*import mongoose from 'mongoose';
 
 const studyQuestionSchema = new mongoose.Schema({
   title: {
@@ -20,4 +20,4 @@ const studyQuestionSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const StudyQuestion = mongoose.model('StudyQuestion', studyQuestionSchema);
-export default StudyQuestion;
+export default StudyQuestion;*/

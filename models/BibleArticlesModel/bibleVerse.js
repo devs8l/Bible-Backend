@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+/*import mongoose from 'mongoose';
 
 const bibleVerseSchema = new mongoose.Schema({
   verseText: {
@@ -26,4 +26,4 @@ const bibleVerseSchema = new mongoose.Schema({
 
 
 const BibleVerse = mongoose.model('BibleVerse', bibleVerseSchema);
-export default BibleVerse;
+export default BibleVerse;*/

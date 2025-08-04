@@ -1,4 +1,4 @@
-import express from "express";
+/*import express from "express";
 import { verifyAdmin } from "../../middleware/authMiddleware.js";
 import {
   addBibleVerse,
@@ -16,4 +16,4 @@ bibleArticlesRouter.delete("/bible-verse/:id", verifyAdmin, deleteBibleVerse);
 
 
 
-export default bibleArticlesRouter;
+export default bibleArticlesRouter;*/

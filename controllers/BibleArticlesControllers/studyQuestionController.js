@@ -1,4 +1,4 @@
-import StudyQuestion from '../../models/BibleArticlesModel/StudyQuestion.js';
+/*import StudyQuestion from '../../models/BibleArticlesModel/StudyQuestion.js';
 
 export const addStudyQuestions = async (req, res) => {
   try {
@@ -121,4 +121,4 @@ export const deleteStudyQuestions = async (req, res) => {
       message: err.message 
     });
   }
-};
+};*/
