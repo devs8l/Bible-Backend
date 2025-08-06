@@ -34,11 +34,22 @@ const ArticleSchema = new mongoose.Schema(
         trim: true,
       },
     ],
+    keywords: [
+      {
+        type: String,
+        trim: true,
+        lowercase: true,
+      },
+    ],
   },
   {
-    timestamps: true, // Automatically handles createdAt and updatedAt
+    timestamps: true, 
   }
 );
+
+
+// ✅ Create a text index on keywords (optional: add title/body too)
+ArticleSchema.index({ keywords: "text" });
 
 const Article = mongoose.model("Article", ArticleSchema);
 export default Article;

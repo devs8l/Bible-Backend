@@ -16,6 +16,7 @@ const uploadToCloudinary = (buffer, folder = 'authors') =>
   });
 
 // Create Article / Verse / Study Questions
+// Create Article / Verse / Study Questions
 export const createArticle = async (req, res) => {
   try {
     let authorImage = '';
@@ -33,11 +34,22 @@ export const createArticle = async (req, res) => {
       verse_quote_reference,
       question_title,
       questions,
-      category
+      category,
+      keywords, // ✅ new field
     } = req.body;
 
     if (!category) {
       return res.status(400).json({ success: false, message: "Category is required." });
+    }
+
+    // ✅ Sanitize keywords if they come as comma-separated string
+    let keywordArray = [];
+    if (keywords) {
+      if (Array.isArray(keywords)) {
+        keywordArray = keywords.map(k => k.trim().toLowerCase());
+      } else if (typeof keywords === "string") {
+        keywordArray = keywords.split(",").map(k => k.trim().toLowerCase());
+      }
     }
 
     const article = await Article.create({
@@ -51,7 +63,8 @@ export const createArticle = async (req, res) => {
       verse_quote_reference,
       question_title,
       questions,
-      category
+      category,
+      keywords: keywordArray, 
     });
 
     res.json({ success: true, article });
@@ -79,7 +92,8 @@ export const updateArticle = async (req, res) => {
       verse_quote_reference,
       question_title,
       questions,
-      category
+      category,
+      keywords 
     } = req.body;
 
     const article = await Article.findByIdAndUpdate(
@@ -95,7 +109,8 @@ export const updateArticle = async (req, res) => {
         verse_quote_reference,
         question_title,
         questions,
-        category
+        category,
+        keywords 
       },
       { new: true }
     );
@@ -137,7 +152,7 @@ export const getAllArticles = async (req, res) => {
   }
 };
 
-// Get related content in same category
+// Get related content in same category with keyword-based priority
 export const getRelatedArticles = async (req, res) => {
   const { articleId } = req.params;
   try {
@@ -146,16 +161,34 @@ export const getRelatedArticles = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Content not found' });
     }
 
-    const related = await Article.find({
-      category: article.category,
-      _id: { $ne: articleId },
-    }).limit(3);
+    const articleKeywords = article.keywords || [];
 
-    res.json({ success: true, related });
+    // Step 1: Find same category, excluding current article
+    const sameCategoryArticles = await Article.find({
+      category: article.category,
+      _id: { $ne: article._id }
+    });
+
+    // Step 2: Rank articles by number of matching keywords
+    const rankedArticles = sameCategoryArticles
+      .map((item) => {
+        const commonKeywords = item.keywords?.filter((kw) =>
+          articleKeywords.includes(kw)
+        ) || [];
+        return {
+          ...item.toObject(),
+          matchCount: commonKeywords.length,
+        };
+      })
+      .sort((a, b) => b.matchCount - a.matchCount) 
+      .slice(0, 5); // Optional: limit to top 5
+
+    res.json({ success: true, related: rankedArticles });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 // Delete content
 export const deleteArticle = async (req, res) => {
