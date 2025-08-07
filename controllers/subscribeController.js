@@ -1,4 +1,5 @@
 import sendEmail from "../utils/subscribeEmail.js";
+import Subscriber from "../models/Subscriber.js";
 
 export const subscribeHandler = async (req, res) => {
   try {
@@ -8,7 +9,16 @@ export const subscribeHandler = async (req, res) => {
       return res.json({ success: false, message: "Email is required" });
     }
 
-    // ✉️ Email to Subscriber
+    const existing = await Subscriber.findOne({ email });
+    if (existing) {
+      return res.json({
+        success: false,
+        message: "You’re already subscribed to Centro Biblia.",
+      });
+    }
+
+    await Subscriber.create({ email });
+
     await sendEmail({
       email,
       subject: "Welcome to the Centro Biblia Family!",
@@ -31,7 +41,6 @@ Centro Biblia Team
       `.trim(),
     });
 
-    // 📩 Email to Admin
     await sendEmail({
       email: process.env.USER,
       subject: "📬 New Subscriber Notification",
@@ -48,7 +57,10 @@ Keep spreading the Word with love.
       `.trim(),
     });
 
-    res.json({ success: true, message: "Subscription successful! Please check your inbox." });
+    res.json({
+      success: true,
+      message: "Subscription successful! Please check your inbox.",
+    });
   } catch (error) {
     console.error(error);
     res.json({ success: false, message: "Subscription failed. Please try again." });

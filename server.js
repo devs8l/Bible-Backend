@@ -18,6 +18,8 @@ import session from "express-session";
 import passport from "passport";
 import cookieParser from "cookie-parser";
 import "./config/passport.js"; 
+import cron from "node-cron";
+import { sendDailyVerseToSubscribers } from "./utils/dailyVerseEmail.js";
 
 
 // App config
@@ -47,6 +49,11 @@ app.use(session({
     httpOnly: true
   }
 }));
+
+cron.schedule("0 10 * * *", () => {
+  console.log("📬 Sending daily Bible verse at 10:00 AM...");
+  sendDailyVerseToSubscribers();
+});
 
 // api endpoints
 

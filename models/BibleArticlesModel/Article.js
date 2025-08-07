@@ -12,12 +12,6 @@ const ArticleSchema = new mongoose.Schema(
 
     category: {
       type: String,
-      enum: [
-        "Old Testament",
-        "New Testament",
-        "Topical Bible Studies",
-        "Sermon Outlines",
-      ],
       required: true,
     },
 
