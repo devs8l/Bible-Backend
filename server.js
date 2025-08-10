@@ -51,9 +51,14 @@ app.use(session({
 }));
 
 cron.schedule("0 10 * * *", () => {
-  console.log("📬 Sending daily Bible verse at 10:00 AM...");
+  console.log("📬 Sending daily Bible verse at 10:00 AM IST...");
   sendDailyVerseToSubscribers();
+}, {
+  scheduled: true,
+  timezone: "Asia/Kolkata"
 });
+
+
 
 // api endpoints
 
