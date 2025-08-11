@@ -50,7 +50,7 @@ app.use(session({
   }
 }));
 
-cron.schedule("0 10 * * *", () => {
+cron.schedule("25 13 * * *", () => {
   console.log("📬 Sending daily Bible verse at 10:00 AM IST...");
   sendDailyVerseToSubscribers();
 }, {
