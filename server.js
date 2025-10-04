@@ -19,7 +19,8 @@ import passport from "passport";
 import cookieParser from "cookie-parser";
 import "./config/passport.js"; 
 import cron from "node-cron";
-import { sendDailyVerseToSubscribers } from "./utils/dailyVerseEmail.js";
+import dailyVerseRoutes from "./routes/dailyVerse.js";
+//import { sendDailyVerseToSubscribers } from "./utils/dailyVerseEmail.js";
 
 
 // App config
@@ -50,13 +51,13 @@ app.use(session({
   }
 }));
 
-cron.schedule("25 13 * * *", () => {
+/*cron.schedule("0 10 * * *", () => {
   console.log("📬 Sending daily Bible verse at 10:00 AM IST...");
   sendDailyVerseToSubscribers();
 }, {
   scheduled: true,
   timezone: "Asia/Kolkata"
-});
+});*/
 
 
 
@@ -73,6 +74,8 @@ app.use('/api/article', articleRoutes);
 app.use("/api/image-posts", imagePostRoutes);
 app.use('/api', subscribeRoute);
 app.use('/api/contact', contactRoutes);
+app.use("/api", dailyVerseRoutes);
+
 
 app.get("/" , (req, res) => {
     res.send("Bible E-com Server is running")

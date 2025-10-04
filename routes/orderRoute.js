@@ -1,5 +1,5 @@
 import express from "express"
-import  { placedOrder, allOrders, userOrders, updateStatus} from "../controllers/orderController.js" // placedOrderRazorpay, verifyRazorpay 
+import  { placedOrder, allOrders, userOrders, updateStatus ,placedOrderRazorpay, verifyRazorpay} from "../controllers/orderController.js"   
 import adminAuth from "../middleware/adminAuth.js"
 import authUser from "../middleware/auth.js"
 import productModel from "../models/productModel.js"
@@ -14,7 +14,7 @@ orderRouter.post("/status", adminAuth, updateStatus)
 // Payment Features
 
 orderRouter.post("/place",authUser, placedOrder)
-//orderRouter.post("/razorpay", authUser, placedOrderRazorpay)
+orderRouter.post("/razorpay", authUser, placedOrderRazorpay)
 
 // User Features
 orderRouter.post("/userOrders", authUser, userOrders)
@@ -40,6 +40,6 @@ orderRouter.post("/send-digital-copy", authUser, async (req, res) => {
 
 
 // verify payment
-//orderRouter.post("/verifyRazorpay", authUser, verifyRazorpay)
+orderRouter.post("/verifyRazorpay", authUser, verifyRazorpay)
 
 export default orderRouter;
