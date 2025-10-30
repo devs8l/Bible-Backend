@@ -21,6 +21,8 @@ import "./config/passport.js";
 import cron from "node-cron";
 import dailyVerseRoutes from "./routes/dailyVerse.js";
 //import { sendDailyVerseToSubscribers } from "./utils/dailyVerseEmail.js";
+import delhiveryRouter from "./routes/delhiveryRouter.js";
+import offeringRoutes from "./routes/offeringRoutes.js";
 
 
 // App config
@@ -75,6 +77,8 @@ app.use("/api/image-posts", imagePostRoutes);
 app.use('/api', subscribeRoute);
 app.use('/api/contact', contactRoutes);
 app.use("/api", dailyVerseRoutes);
+app.use("/api/delhivery", delhiveryRouter);
+app.use("/api/offering", offeringRoutes);
 
 
 app.get("/" , (req, res) => {
