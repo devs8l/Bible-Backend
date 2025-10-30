@@ -23,6 +23,7 @@ import dailyVerseRoutes from "./routes/dailyVerse.js";
 //import { sendDailyVerseToSubscribers } from "./utils/dailyVerseEmail.js";
 import delhiveryRouter from "./routes/delhiveryRouter.js";
 import offeringRoutes from "./routes/offeringRoutes.js";
+import paymentSettingsRoutes from "./routes/paymentSettingsRoutes.js"
 
 
 // App config
@@ -79,6 +80,7 @@ app.use('/api/contact', contactRoutes);
 app.use("/api", dailyVerseRoutes);
 app.use("/api/delhivery", delhiveryRouter);
 app.use("/api/offering", offeringRoutes);
+app.use("/api/enable" , paymentSettingsRoutes);
 
 
 app.get("/" , (req, res) => {

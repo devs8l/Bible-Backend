@@ -6,6 +6,7 @@ import {
   getAllOfferings,
 } from "../controllers/offeringController.js";
 import authUser from "../middleware/auth.js";
+import { verifyAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -16,9 +17,9 @@ router.post("/create-donation", authUser, createOfferingOrder);
 router.post("/verify-payment", authUser, verifyOfferingPayment);
 
 // 🟠 Get all offerings (admin)
-router.get("/all", getAllOfferings);
+router.get("/all", verifyAdmin, getAllOfferings);
 
 // 🔵 Get offerings for one user
-router.get("/user/:userId", getUserOfferings);
+router.get("/user/:userId", authUser, getUserOfferings);
 
 export default router;
