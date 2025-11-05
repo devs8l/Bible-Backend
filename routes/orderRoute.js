@@ -42,4 +42,19 @@ orderRouter.post("/send-digital-copy", authUser, async (req, res) => {
 // verify payment
 orderRouter.post("/verifyRazorpay", authUser, verifyRazorpay)
 
+// 📄 PDF Download Endpoint
+orderRouter.get("/download", async (req, res) => {
+  const file = req.query.file;
+  const name = req.query.name || "book";
+  const response = await fetch(file);
+  const buffer = await response.arrayBuffer();
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="${name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf"`
+  );
+  res.send(Buffer.from(buffer));
+});
+
 export default orderRouter;

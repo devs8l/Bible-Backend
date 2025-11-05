@@ -3,6 +3,9 @@ import userModel from "../models/userModel.js";
 import productModel from "../models/productModel.js";
 import razorpay from "razorpay";
 import crypto from "crypto";
+import sendDigitalCopy from "../utils/sendDigitalCopy.js";
+import sendOrderEmail from "../utils/sendOrderEmail.js";
+import { customerOrderTemplate, adminOrderTemplate } from "../utils/orderEmailTemplates.js";
 import delhiveryAPI from "../utils/delhiveryService.js"; // ✅ Import Delhivery API instance
 
 // ✅ Razorpay Gateway Initialization
@@ -11,7 +14,7 @@ const razorpayInstance = new razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// 🧩 Helper: Create Delhivery Shipment Automatically
+/* 🧩 Helper: Create Delhivery Shipment Automatically
 const createDelhiveryShipment = async (orderData) => {
   try {
     const shipmentPayload = {
@@ -46,7 +49,7 @@ const createDelhiveryShipment = async (orderData) => {
     console.error("❌ Delhivery Shipment Creation Failed:", err.response?.data || err.message);
     return null;
   }
-};
+};*/
 
 // ------------------------------------------------------------------------
 // 🧾 1️⃣ COD Order Placement
@@ -89,9 +92,36 @@ export const placedOrder = async (req, res) => {
     }
 
     // ✅ Auto Create Delhivery Shipment
-    await createDelhiveryShipment(newOrder);
+    // await createDelhiveryShipment(newOrder);
 
-    res.json({ success: true, message: "Order Placed Successfully & Shipment Created" });
+    // ✅ Everything succeeded up to here — now trigger emails
+    const orderCode = `#${newOrder._id.toString().slice(-6).toUpperCase()}`;
+
+    try {
+      // Send Customer Email
+      await sendOrderEmail({
+        to: email,
+        subject: `🧾 Order Confirmation - ${orderCode}`,
+        html: customerOrderTemplate(newOrder, orderCode),
+      });
+
+      // Send Admin Email
+      await sendOrderEmail({
+        to: process.env.USER, // admin email from .env
+        subject: `📦 New Order Received - ${orderCode}`,
+        html: adminOrderTemplate(newOrder, orderCode),
+      });
+    } catch (emailError) {
+      console.error("❌ Email sending failed:", emailError.message);
+      // Don’t throw error — order is already placed successfully
+    }
+
+    // ✅ Final response to client
+    res.json({
+      success: true,
+      message: "Order placed successfully and confirmation emails sent.",
+      orderId: newOrder._id,
+    });
   } catch (error) {
     console.error("Order placement error:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -105,7 +135,7 @@ export const placedOrderRazorpay = async (req, res) => {
     const { amount } = req.body;
 
     const options = {
-      amount: amount * 100, // in paise
+      amount: Math.round(Number(amount) * 100), // in paise
       currency: "INR",
       receipt: crypto.randomBytes(10).toString("hex"),
     };
@@ -136,7 +166,7 @@ export const verifyRazorpay = async (req, res) => {
       razorpay_signature,
     } = req.body;
 
-    // Verify Signature
+    // 🧠 Verify Signature
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -144,10 +174,12 @@ export const verifyRazorpay = async (req, res) => {
       .digest("hex");
 
     if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({ success: false, message: "Payment Verification Failed" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Payment Verification Failed" });
     }
 
-    // Save Verified Order
+    // 💾 Save Verified Order
     const orderData = {
       userId,
       name,
@@ -166,7 +198,7 @@ export const verifyRazorpay = async (req, res) => {
     const newOrder = new orderModel(orderData);
     await newOrder.save();
 
-    // Reduce Stock
+    // 📦 Reduce Stock
     for (const item of items) {
       const product = await productModel.findById(item.itemId);
       if (product) {
@@ -175,7 +207,7 @@ export const verifyRazorpay = async (req, res) => {
       }
     }
 
-    // Clear Cart
+    // 🛒 Clear Cart
     const user = await userModel.findById(userId);
     if (user && user.cartData) {
       const updatedCart = { ...user.cartData };
@@ -183,17 +215,58 @@ export const verifyRazorpay = async (req, res) => {
       await userModel.findByIdAndUpdate(userId, { cartData: updatedCart });
     }
 
-    // ✅ Auto Create Delhivery Shipment
-    await createDelhiveryShipment(newOrder);
+    // 🚚 Auto Create Shipment (optional)
+    // await createDelhiveryShipment(newOrder);
+
+    // ✅ Everything succeeded up to here 
+    const orderCode = `#${newOrder._id.toString().slice(-6).toUpperCase()}`;
+
+    try {
+      // Send Customer Email
+      await sendOrderEmail({
+        to: email,
+        subject: `🧾 Order Confirmation - ${orderCode}`,
+        html: customerOrderTemplate(newOrder, orderCode),
+      });
+
+      // Send Admin Email
+      await sendOrderEmail({
+        to: process.env.USER, // admin email from .env
+        subject: `📦 New Order Received - ${orderCode}`,
+        html: adminOrderTemplate(newOrder, orderCode),
+      });
+    } catch (emailError) {
+      console.error("❌ Email sending failed:", emailError.message);
+      // Don’t throw error — order is already placed successfully
+    }
+
+
+    // 📧 Send Digital Copies Automatically
+    const digitalItems = items.filter((item) => item.format === "digital");
+    if (digitalItems.length > 0) {
+      try {
+        for (const item of digitalItems) {
+          const product = await productModel.findById(item.itemId);
+          if (product?.digitalFile) {
+            await sendDigitalCopy(email, name, product.digitalFile, product.name);
+          }
+        }
+        console.log("✅ Digital copies sent successfully");
+      } catch (err) {
+        console.error("❌ Error sending digital copies:", err);
+      }
+    }
 
     res.json({
       success: true,
-      message: "Payment Verified, Order Placed & Shipment Created",
+      message: "Payment Verified, Order Placed & Digital Copy Sent",
       orderId: newOrder._id,
     });
   } catch (error) {
     console.error("Verify & Place Order Error:", error);
-    res.status(500).json({ success: false, message: error.message });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to verify Razorpay payment" });
   }
 };
 
@@ -227,12 +300,36 @@ export const userOrders = async (req, res) => {
 export const updateStatus = async (req, res) => {
   try {
     const { orderId, status } = req.body;
-    await orderModel.findByIdAndUpdate(orderId, { status });
-    res.json({ success: true, message: "Order Status Updated" });
+    
+    // Optional: Add validation for allowed status values
+    const allowedStatuses = ['order placed', 'processing', 'shipped', 'delivered', 'cancelled'];
+    if (!allowedStatuses.includes(status.toLowerCase())) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid status value" 
+      });
+    }
+    
+    const updatedOrder = await orderModel.findByIdAndUpdate(
+      orderId, 
+      { status },
+      { new: true }
+    );
+    
+    if (!updatedOrder) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Order not found" 
+      }); 
+    }
+    
+    res.json({ 
+      success: true, 
+      message: "Order Status Updated",
+      order: updatedOrder 
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-

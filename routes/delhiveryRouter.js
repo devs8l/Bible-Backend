@@ -1,4 +1,3 @@
-// routes/delhiveryRouter.js
 import express from "express";
 import {
   checkServiceability,
@@ -6,16 +5,22 @@ import {
   trackShipment,
   createPickupRequest,
   expectedTAT,
-  createShipment,
-} from "../controllers/delhiveryController.js";
+  createShipmentForOrder,
+  getShipmentLabel,
+} from "../controllers/delhiveryController.js"; // createShipment,
+import { verifyAdmin } from "../middleware/authMiddleware.js";
+
 
 const router = express.Router();
 
 router.get("/serviceability", checkServiceability);
 router.get("/shipping-cost", calculateShipping);
 router.get("/track", trackShipment);
-router.post("/pickup", createPickupRequest);
 router.get("/expected-tat", expectedTAT);
-router.post("/create-shipment", createShipment);
+router.post("/pickup", verifyAdmin , createPickupRequest);
+router.post("/:orderId/shipment", verifyAdmin, createShipmentForOrder);
+router.get("/label/:awb", verifyAdmin,  getShipmentLabel);
+
+// router.post("/create-shipment", createShipment);
 
 export default router;

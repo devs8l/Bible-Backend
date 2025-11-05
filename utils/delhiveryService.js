@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const DELHIVERY_API = "https://track.delhivery.com";
+const DELHIVERY_API = process.env.DELHIVERY_BASE_URL;
 const DELHIVERY_TOKEN = process.env.DELHIVERY_API_TOKEN; 
 
 const delhiveryAPI = axios.create({

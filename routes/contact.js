@@ -1,5 +1,7 @@
 import express from 'express';
 import Contact from '../models/Contact.js';
+import sendOrderEmail from "../utils/sendOrderEmail.js"
+import { contactAdminTemplate , contactUserTemplate } from '../utils/contactTemplates.js';
 
 const router = express.Router();
 
@@ -18,6 +20,26 @@ router.post('/', async (req, res) => {
 
     const newEntry = new Contact({ name, email, phone, subject, message });
     await newEntry.save();
+
+    // ✅ Prepare email data
+    try {
+      // Send to Admin
+      await sendOrderEmail({
+        to: process.env.USER, // your admin email
+        subject: `📩 New Contact Form Submission - ${name}`,
+        html: contactAdminTemplate(newEntry),
+      });
+
+      // Send Acknowledgment to User
+      await sendOrderEmail({
+        to: email,
+        subject: `✅ We received your message - Centro Biblia`,
+        html: contactUserTemplate(newEntry),
+      });
+    } catch (emailErr) {
+      console.error("❌ Contact form email error:", emailErr.message);
+    }
+
     res.status(201).json({ message: 'Form submitted successfully!' });
   } catch (err) {
     console.error('Error saving contact form:', err);
