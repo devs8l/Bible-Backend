@@ -2,6 +2,8 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import Offering from "../models/offeringModel.js";
 import userModel from "../models/userModel.js";
+import sendOrderEmail from "../utils/sendOrderEmail.js"
+import { offeringUserTemplate , offeringAdminTemplate } from "../utils/offeringTemplates.js";
 
 // 🔐 Razorpay Instance
 const razorpay = new Razorpay({
@@ -79,6 +81,38 @@ export const verifyOfferingPayment = async (req, res) => {
       paymentStatus: "paid",
       verified: true,
     });
+
+    // ✅ Fetch user info
+    const user = await User.findById(userId);
+    if (user && user.email) {
+      const formattedAmount = Number(amount).toLocaleString("en-IN", {
+        style: "currency",
+        currency: "INR",
+      });
+
+      // Send email to user
+      await sendOrderEmail({
+        to: user.email,
+        subject: "🙏 Thank You for Your Freewill Offering",
+        html: offeringUserTemplate({
+          name: user.name || "Beloved",
+          amount: formattedAmount,
+          paymentId: razorpay_payment_id,
+        }),
+      });
+
+      // Send email to admin
+      await sendOrderEmail({
+        to: process.env.USER,
+        subject: "📬 New Freewill Offering Received",
+        html: offeringAdminTemplate({
+          name: user.name || "Anonymous",
+          email: user.email,
+          amount: formattedAmount,
+          paymentId: razorpay_payment_id,
+        }),
+      });
+    }
 
     res.status(200).json({ success: true, offering });
   } catch (error) {
