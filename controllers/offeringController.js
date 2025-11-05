@@ -72,7 +72,7 @@ export const verifyOfferingPayment = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid payment signature" });
     }
 
-    // ✅ Create offering entry after payment success
+    // ✅ Create offering entry
     const offering = await Offering.create({
       user: userId,
       amount,
@@ -83,41 +83,47 @@ export const verifyOfferingPayment = async (req, res) => {
     });
 
     // ✅ Fetch user info
-    const user = await User.findById(userId);
-    if (user && user.email) {
-      const formattedAmount = Number(amount).toLocaleString("en-IN", {
-        style: "currency",
-        currency: "INR",
-      });
+    const user = await userModel.findById(userId);
+      if (user && user.email) {
+        const formattedAmount = Number(amount).toLocaleString("en-IN", {
+          style: "currency",
+          currency: "INR",
+        });
 
-      // Send email to user
-      await sendOrderEmail({
-        to: user.email,
-        subject: "🙏 Thank You for Your Freewill Offering",
-        html: offeringUserTemplate({
-          name: user.name || "Beloved",
-          amount: formattedAmount,
-          paymentId: razorpay_payment_id,
-        }),
-      });
+        // 🟡 Send emails safely — don’t let failure crash API
+        try {
+          await sendOrderEmail({
+            to: user.email,
+            subject: "🙏 Thank You for Your Freewill Offering",
+            html: offeringUserTemplate({
+              name: user.name || "Beloved",
+              amount: formattedAmount,
+              paymentId: razorpay_payment_id,
+            }),
+          });
 
-      // Send email to admin
-      await sendOrderEmail({
-        to: process.env.USER,
-        subject: "📬 New Freewill Offering Received",
-        html: offeringAdminTemplate({
-          name: user.name || "Anonymous",
-          email: user.email,
-          amount: formattedAmount,
-          paymentId: razorpay_payment_id,
-        }),
-      });
-    }
+          await sendOrderEmail({
+            to: process.env.USER,
+            subject: "📬 New Freewill Offering Received",
+            html: offeringAdminTemplate({
+              name: user.name || "Anonymous",
+              email: user.email,
+              amount: formattedAmount,
+              paymentId: razorpay_payment_id,
+            }),
+          });
+        } catch (emailErr) {
+          console.error("⚠️ Email send failed:", emailErr.message);
+          // Don’t stop the response because DB entry succeeded
+        }
+      }
 
-    res.status(200).json({ success: true, offering });
+    // ✅ Always respond success if offering is saved
+    return res.status(200).json({ success: true, offering });
+
   } catch (error) {
-    console.error("Error verifying payment:", error);
-    res.status(500).json({ success: false, message: "Payment verification failed" });
+    console.error("❌ Error verifying payment:", error);
+    return res.status(500).json({ success: false, message: "Payment verification failed" });
   }
 };
 
